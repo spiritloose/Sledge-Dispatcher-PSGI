@@ -17,15 +17,13 @@ sub DECLINED() {
 }
 
 sub new {
-    my ($class, %options) = @_;
-    bless {
-        dir_config => \%options,
-    }, $class;
+    my ($class, %config) = @_;
+    bless { config => \%config }, $class;
 }
 
-sub dir_config {
+sub config {
     my ($self, $name) = @_;
-    $self->{dir_config}->{$name};
+    $self->{config}->{$name};
 }
 
 sub debug {
@@ -57,10 +55,10 @@ sub determine {
     my ($self, $env) = @_;
 
     # we can ignore extensions!
-    my $ext = $self->dir_config('SledgeExtension') || '.cgi';
+    my $ext = $self->config('Extension') || '.cgi';
 
     # for static .html
-    my $static = $self->dir_config('SledgeStaticExtension') || '.html';
+    my $static = $self->config('StaticExtension') || '.html';
 
     # determine directory and page name
     my ($page, $dir, $suf) = File::Basename::fileparse($env->{PATH_INFO}, $ext, $static);
@@ -91,7 +89,7 @@ sub handler {
 
     $self->_load_module($env, $loadclass);
 
-    my $no_static = uc($self->dir_config('SledgeDispatchStatic') || 'On') eq 'OFF';
+    my $no_static = !$self->config('DispatchStatic');
     if ($is_static && !$self->_generated($loadclass, $page)) {
         debug($env, 'static method, but not yet auto-generated');
         if ($no_static || $loadclass->can("dispatch_$page")) {
@@ -101,8 +99,8 @@ sub handler {
             $self->_generate_method($env, $loadclass, $page);
         }
     } elsif ($slash) {
-        my @indexes = $self->dir_config('SledgeDirectoryIndex') ?
-        split(/\s+/, $self->dir_config('SledgeDirectoryIndex')) : 'index';
+        my @indexes = $self->config('DirectoryIndex') ?
+        split(/\s+/, $self->config('DirectoryIndex')) : 'index';
         debug($env, "indexes: ", join(",", @indexes));
         for my $index (@indexes) {
             if ($loadclass->can("dispatch_$index")) {

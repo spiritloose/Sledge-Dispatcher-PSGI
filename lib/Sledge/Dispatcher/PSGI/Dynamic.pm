@@ -9,12 +9,12 @@ sub do_determine {
     my ($self, $env, $dir) = @_;
 
     my @class = grep length, split /\//, $dir;
-    if (!@class and my $root = $self->dir_config('SledgeRootDirClassName')) {
+    if (!@class and my $root = $self->config('RootDirClassName')) {
         @class = ($root);
     }
 
-    my $base = $self->dir_config('SledgeBaseClass')
-            or Sledge::Exception::ConfigKeyUndefined->throw('SledgeBaseClass needed');
+    my $base = $self->config('BaseClass')
+            or Sledge::Exception::ConfigKeyUndefined->throw('BaseClass needed');
     my $loadclass = join('::', $base, map { $self->_capitalize($_) } @class);
     return $loadclass;
 }
@@ -38,8 +38,8 @@ Sledge::Dispatcher::PSGI::Dynamic - auto-dispatch PSGI application
 =head1 SYNOPSIS
 
   my $dispatcher = Sledge::Dispatcher::PSGI::Dynamic->new(
-      SledgeBaseClass => 'MyProject::Pages',
-      SledgeRootDirClassName => 'Index',
+      BaseClass => 'MyProject::Pages',
+      RootDirClassName => 'Index',
   );
   my $app = sub { $dispatcher->handler(@_) };
 

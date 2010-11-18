@@ -24,8 +24,7 @@ sub load_property {
 
 sub _reload {
     my ($self, $env) = @_;
-    my $reload = $self->dir_config('SledgeMapReload');
-    return !(defined $reload && uc($reload) eq 'OFF');
+    $self->config('MapReload');
 }
 
 sub init_modules {
@@ -42,12 +41,12 @@ sub do_determine {
     my ($self, $env, $dir) = @_;
 
     # load property file
-    my $map_path = $self->dir_config('SledgeMapFile')
+    my $map_path = $self->config('MapFile')
         or Sledge::Exception::MapFileUndefined->throw;
     my $props = $self->load_property($env, $map_path);
     my $loadclass = $props->get_property($dir) || $props->get_property("$dir/");
 
-    return $loadclass || $self->dir_config('SledgeStaticClass');
+    return $loadclass || $self->config('StaticClass');
 }
 
 1;
@@ -60,9 +59,9 @@ Sledge::Dispatcher::PSGI::Properties - auto-dispatch PSGI application
 =head1 SYNOPSIS
 
   my $dispatcher = Sledge::Dispatcher::PSGI::Properties->new(
-      SledgeMapFile => '/path/to/map.props',
-      SledgeDispatchStatic => 'Off',
-      SledgeMapReload => 'Off',
+      MapFile        => '/path/to/map.props',
+      DispatchStatic => 0,
+      MapReload      => 0,
   );
   my $app = sub { $dispatcher->handler(@_) };
 
@@ -82,8 +81,8 @@ Sledge::Dispatcher::PSGI::Properties - auto-dispatch PSGI application
   use Plack::Builder;
   builder {
       my $dispatcher = Sledge::Dispatcher::PSGI::Properties->new(
-          SledgeMapFile => '/path/to/map.props',
-          SledgeExtension => '.do',
+          MapFile => '/path/to/map.props',
+          Extension => '.do',
       );
       mount => sub { $dispatcher->handler(@_) };
   };
