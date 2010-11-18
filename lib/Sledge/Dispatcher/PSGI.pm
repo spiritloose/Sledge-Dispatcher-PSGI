@@ -89,7 +89,10 @@ sub handler {
 
     $self->_load_module($env, $loadclass);
 
-    my $no_static = !$self->config('DispatchStatic');
+    my $no_static = do {
+        my $config = $self->config('DispatchStatic');
+        defined $config ? $config : 0;
+    };
     if ($is_static && !$self->_generated($loadclass, $page)) {
         debug($env, 'static method, but not yet auto-generated');
         if ($no_static || $loadclass->can("dispatch_$page")) {
