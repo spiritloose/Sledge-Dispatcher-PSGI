@@ -70,6 +70,10 @@ sub args {
 
 sub param {
     my $self = shift;
+    # $r->param(foo => \@bar);
+    if (@_ == 2 && ref($_[1]) eq 'ARRAY') {
+        return $self->query->param($_[0], @{$_[1]});
+    }
     $self->query->param(@_);
 }
 
