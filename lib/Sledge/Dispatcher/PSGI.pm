@@ -9,8 +9,6 @@ our $VERSION = '0.0.1';
 
 our $DEBUG = 0;
 
-my %loaded;
-
 sub DECLINED() {
     my $body = "Not Found\n";
     [404, ['Content-Type' => 'text/plain', 'Content-Length' => length $body], [$body]];
@@ -18,7 +16,11 @@ sub DECLINED() {
 
 sub new {
     my ($class, %config) = @_;
-    bless { config => \%config }, $class;
+    bless {
+        config    => \%config,
+        loaded    => {},
+        generated => {},
+    }, $class;
 }
 
 sub to_app {
@@ -41,7 +43,7 @@ sub debug {
 sub _load_module {
     my ($self, $env, $module) = @_;
     debug($env, "loading $module");
-    return if $loaded{$module};
+    return if $self->{loaded}->{$module};
 
     no strict 'refs';
     eval "require $module";
@@ -51,7 +53,7 @@ sub _load_module {
     } elsif ($@) {
         debug($env, "erorr loading $module: $@");
     }
-    $loaded{$module} = 1;
+    $self->{loaded}->{$module} = 1;
 }
 
 sub null_method { }
@@ -140,21 +142,19 @@ sub handler {
     $loadclass->new($env)->dispatch($page);
 }
 
-my %generated;
-
 sub _generate_method {
     my ($self, $env, $loadclass, $page) = @_;
     debug($env, "generating $page on $loadclass");
     no strict 'refs';
     if (-e $loadclass->guess_filename($page)) {
         *{"$loadclass\::dispatch_$page"} = \&null_method;
-        $generated{$loadclass, $page} = 1;
+        $self->{generated}->{$loadclass, $page} = 1;
     }
 }
 
 sub _generated {
     my ($self, $loadclass, $page) = @_;
-    return $generated{$loadclass, $page};
+    return $self->{generated}->{$loadclass, $page};
 }
 
 sub do_determine { Sledge::Exception::AbstractMethod->throw }
