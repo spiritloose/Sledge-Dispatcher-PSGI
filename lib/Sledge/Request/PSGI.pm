@@ -9,8 +9,9 @@ use Plack::Response;
 sub new {
     my ($class, $env) = @_;
     bless {
-        query => Plack::Request->new($env),
-        res   => Plack::Response->new(200),
+        query  => Plack::Request->new($env),
+        res    => Plack::Response->new(200),
+        pnotes => {},
     }, $class;
 }
 
@@ -70,6 +71,17 @@ sub args {
 sub param {
     my $self = shift;
     $self->query->param(@_);
+}
+
+sub pnotes {
+    my $self = shift;
+    if (@_ == 0) {
+        return keys %{$self->{pnotes}};
+    } elsif (@_ == 1) {
+        return $self->{pnotes}->{$_[0]};
+    } else {
+        $self->{pnotes}->{$_[0]} = $_[1];
+    }
 }
 
 sub AUTOLOAD {
