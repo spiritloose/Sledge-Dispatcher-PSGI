@@ -5,6 +5,7 @@ use warnings;
 use Sledge::Request::Table;
 use Plack::Request;
 use Plack::Response;
+use Sledge::Request::CGI;
 
 sub new {
     my ($class, $env) = @_;
@@ -27,12 +28,10 @@ sub header_out {
 
 sub headers_out {
     my $self = shift;
-    my %header_hash;
-    $self->res->headers->scan(sub {
-        $header_hash{$_[0]} = $_[1];
-    });
-    return wantarray ? %header_hash
-    : Sledge::Request::Table->new(\%header_hash);
+    my %hdr;
+    $self->res->headers->scan(sub { $hdr{$_[0]} = $_[1] });
+    return wantarray ? %hdr
+        : Sledge::Request::Table->new(\%hdr);
 }
 
 sub header_in {
@@ -47,6 +46,11 @@ sub content_type {
 
 sub send_http_header {}
 
+sub method {
+    my $self = shift;
+    $self->query->method || 'GET';
+}
+
 sub status {
     my ($self, $status) = @_;
     $self->res->status($status);
@@ -54,7 +58,8 @@ sub status {
 
 sub print {
     my $self = shift;
-    my $body = ($self->res->body || '') . join('', @_);
+    my $body = $self->res->body || [];
+    push @$body, @_;
     $self->res->body($body);
 }
 
@@ -86,6 +91,11 @@ sub pnotes {
     } else {
         $self->{pnotes}->{$_[0]} = $_[1];
     }
+}
+
+sub finalize {
+    my $self = shift;
+    $self->res->finalize;
 }
 
 sub AUTOLOAD {

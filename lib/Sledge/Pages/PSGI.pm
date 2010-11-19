@@ -7,9 +7,9 @@ use Sledge::Request::PSGI;
 
 sub dispatch {
     my ($self, $page) = @_;
-    my $res = $self->r->res;
+    my $r = $self->r;
     $self->SUPER::dispatch($page);
-    $res->finalize;
+    $r->finalize;
 }
 
 sub create_request {
