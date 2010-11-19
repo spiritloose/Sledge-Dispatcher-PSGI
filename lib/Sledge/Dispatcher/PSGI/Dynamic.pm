@@ -41,7 +41,7 @@ Sledge::Dispatcher::PSGI::Dynamic - auto-dispatch PSGI application
       BaseClass => 'MyProject::Pages',
       RootDirClassName => 'Index',
   );
-  my $app = sub { $dispatcher->handler(@_) };
+  my $app = $dispatcher->to_app;
 
 =head1 AUTHOR
 

@@ -10,7 +10,7 @@ my $dispatcher = Sledge::Dispatcher::PSGI::Dynamic->new(
     BaseClass => 't::TestProj::Pages',
     RootDirClassName => 'Root',
 );
-my $app = sub { $dispatcher->handler(@_) };
+my $app = $dispatcher->to_app;
 
 test_psgi $app, sub {
     my $cb = shift;

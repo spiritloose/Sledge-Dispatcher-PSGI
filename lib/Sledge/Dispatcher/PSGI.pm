@@ -21,6 +21,11 @@ sub new {
     bless { config => \%config }, $class;
 }
 
+sub to_app {
+    my $self = shift;
+    sub { $self->handler(@_) };
+}
+
 sub config {
     my ($self, $name) = @_;
     $self->{config}->{$name};
@@ -76,8 +81,6 @@ sub determine {
     return $loadclass, $page, $suf eq $static, ($page eq '' && $suf eq '');
 }
 
-
-# PSGI application
 sub handler {
     my ($self, $env) = @_;
     my ($loadclass, $page, $is_static, $slash) = $self->determine($env);

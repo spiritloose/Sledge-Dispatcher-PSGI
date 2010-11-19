@@ -9,7 +9,7 @@ use Sledge::Dispatcher::PSGI::Properties;
 my $dispatcher = Sledge::Dispatcher::PSGI::Properties->new(
     MapFile => 't/map/map.props',
 );
-my $app = sub { $dispatcher->handler(@_) };
+my $app = $dispatcher->to_app;
 
 test_psgi $app, sub {
     my $cb = shift;

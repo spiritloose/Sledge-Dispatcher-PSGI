@@ -63,7 +63,7 @@ Sledge::Dispatcher::PSGI::Properties - auto-dispatch PSGI application
       DispatchStatic => 0,
       MapReload      => 0,
   );
-  my $app = sub { $dispatcher->handler(@_) };
+  my $app = $dispatcher->to_app;
 
   # map.props
   / = My::Pages::Index
@@ -84,7 +84,7 @@ Sledge::Dispatcher::PSGI::Properties - auto-dispatch PSGI application
           MapFile => '/path/to/map.props',
           Extension => '.do',
       );
-      mount => sub { $dispatcher->handler(@_) };
+      mount => $dispatcher->to_app;
   };
 
   # map.props
