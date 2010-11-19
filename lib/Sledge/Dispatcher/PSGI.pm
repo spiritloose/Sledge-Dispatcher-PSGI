@@ -137,11 +137,7 @@ sub handler {
 
     debug($env, "ok now loading $loadclass - $page");
     local %ENV = (%ENV, %$env);
-    my $pages = $loadclass->new($env);
-    my $res = $pages->r->res;
-    $pages->dispatch($page);
-
-    $res->finalize;
+    $loadclass->new($env)->dispatch($page);
 }
 
 my %generated;
