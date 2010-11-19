@@ -5,7 +5,6 @@ use warnings;
 use Sledge::Request::Table;
 use Plack::Request;
 use Plack::Response;
-use Sledge::Request::CGI;
 
 sub new {
     my ($class, $env) = @_;
@@ -65,7 +64,9 @@ sub print {
 
 sub uri {
     my $self = shift;
-    $self->query->uri->path;
+    my $uri = $self->query->env->{REQUEST_URI};
+    $uri =~ s/\?.*$//;
+    $uri;
 }
 
 sub args {
