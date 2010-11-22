@@ -21,7 +21,7 @@ sub load_property {
     my $path = $self->config('MapFile')
             or Sledge::Exception::MapFileUndefined->throw;
     if (!$self->{cache}->{$path} ||
-        ($self->config('MapReload') && ($self->{cache}->{$path}->[1] < _mtime($path)))) {
+        ($self->_reload && ($self->{cache}->{$path}->[1] < _mtime($path)))) {
         my $props  = Data::Properties->new;
         my $handle = FileHandle->new($path) or
         Sledge::Exception::PropertiesNotFound->throw("$path: $!");
@@ -30,6 +30,12 @@ sub load_property {
         $self->{cache}->{$path} = [ $props, _mtime($path) ];
     }
     return $self->{cache}->{$path}->[0];
+}
+
+sub _reload {
+    my $self = shift;
+    my $reload = $self->config('MapReload');
+    return !(defined $reload && !$reload);
 }
 
 sub init_modules {

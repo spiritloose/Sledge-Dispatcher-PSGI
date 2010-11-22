@@ -84,6 +84,18 @@ sub param {
     $self->query->param(@_);
 }
 
+sub pnotes {
+    my $self = shift;
+    my $pnotes = $self->{pnotes} ||= {};
+    if (@_ == 0) {
+        return keys %$pnotes;
+    } elsif (@_ == 1) {
+        return $pnotes->{$_[0]};
+    } else {
+        $pnotes->{$_[0]} = $_[1];
+    }
+}
+
 sub DESTROY { }
 
 sub AUTOLOAD {
