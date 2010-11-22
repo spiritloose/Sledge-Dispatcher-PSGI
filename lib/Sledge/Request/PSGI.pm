@@ -54,7 +54,7 @@ sub method {
 
 sub print {
     my $self = shift;
-    push @{$self->body}, @_;
+    push @{$self->{body}}, @_;
 }
 
 sub uri {
@@ -87,7 +87,6 @@ sub param {
 sub DESTROY { }
 
 sub AUTOLOAD {
-    my $self = shift;
     (my $meth = our $AUTOLOAD) =~ s/.*:://;
     no strict 'refs';
     *{$meth} = sub {
@@ -99,7 +98,7 @@ sub AUTOLOAD {
 }
 
 sub finalize {
-    my ($self) = @_;
+    my $self = shift;
     my %header = %{$self->{header_hash}};
     my @h;
     for my $key (keys %header) {
@@ -109,7 +108,7 @@ sub finalize {
             push @h, $key, $header{$key};
         }
     }
-    [$self->status, \@h, $self->body];
+    [$self->status, \@h, $self->{body}];
 }
 1;
 __END__
