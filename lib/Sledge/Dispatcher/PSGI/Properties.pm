@@ -6,12 +6,22 @@ use base 'Sledge::Dispatcher::PSGI';
 use Data::Properties;
 use FileHandle;
 use UNIVERSAL::require;
+use Sledge::Exceptions;
+
+sub new {
+    my $class = shift;
+    my $self = $class->SUPER::new(@_);
+    $self->{cache} = {};
+    $self->load_property if $self->config('Preload');
+    $self;
+}
 
 sub load_property {
-    my ($self, $env, $path) = @_;
-    $self->{cache} ||= {};
+    my $self = shift;
+    my $path = $self->config('MapFile')
+            or Sledge::Exception::MapFileUndefined->throw;
     if (!$self->{cache}->{$path} ||
-        ($self->_reload($env) && ($self->{cache}->{$path}->[1] < _mtime($path)))) {
+        ($self->config('MapReload') && ($self->{cache}->{$path}->[1] < _mtime($path)))) {
         my $props  = Data::Properties->new;
         my $handle = FileHandle->new($path) or
         Sledge::Exception::PropertiesNotFound->throw("$path: $!");
@@ -20,11 +30,6 @@ sub load_property {
         $self->{cache}->{$path} = [ $props, _mtime($path) ];
     }
     return $self->{cache}->{$path}->[0];
-}
-
-sub _reload {
-    my ($self, $env) = @_;
-    $self->config('MapReload');
 }
 
 sub init_modules {
@@ -41,9 +46,7 @@ sub do_determine {
     my ($self, $env, $dir) = @_;
 
     # load property file
-    my $map_path = $self->config('MapFile')
-        or Sledge::Exception::MapFileUndefined->throw;
-    my $props = $self->load_property($env, $map_path);
+    my $props = $self->load_property;
     my $loadclass = $props->get_property($dir) || $props->get_property("$dir/");
 
     return $loadclass || $self->config('StaticClass');
@@ -62,6 +65,7 @@ Sledge::Dispatcher::PSGI::Properties - auto-dispatch PSGI application
       MapFile        => '/path/to/map.props',
       DispatchStatic => 0,
       MapReload      => 0,
+      Preload        => 1, # defaults to off.
   );
   my $app = $dispatcher->to_app;
 
