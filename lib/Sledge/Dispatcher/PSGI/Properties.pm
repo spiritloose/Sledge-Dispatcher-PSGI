@@ -88,7 +88,7 @@ Sledge::Dispatcher::PSGI::Properties - auto-dispatch PSGI application
           MapFile => '/path/to/map.props',
           Extension => '.do',
       );
-      mount => $dispatcher->to_app;
+      mount '/webapp' => $dispatcher->to_app;
   };
 
   # map.props
