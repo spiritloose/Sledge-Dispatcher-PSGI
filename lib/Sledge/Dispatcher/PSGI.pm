@@ -1,6 +1,7 @@
 package Sledge::Dispatcher::PSGI;
 use strict;
 use warnings;
+use overload '&{}' => sub { shift->to_app(@_) }, fallback => 1;
 
 use File::Basename;
 use Sledge::Exceptions;
