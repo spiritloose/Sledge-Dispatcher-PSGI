@@ -19,7 +19,7 @@ sub _new_list {
     my @names = $class->_param_names($req);
     return wantarray
         ? map $class->_new_from_name($req, $_), @names
-            : $class->_new_from_name($names[0]);
+            : $class->_new_from_name($req, $names[0]);
 }
 
 sub _new_from_name {
