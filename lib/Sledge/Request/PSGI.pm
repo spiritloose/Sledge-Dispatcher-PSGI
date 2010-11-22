@@ -1,41 +1,41 @@
 package Sledge::Request::PSGI;
 use strict;
 use warnings;
+use base 'Class::Accessor';
+
+__PACKAGE__->mk_accessors(qw(query header_hash env status));
 
 use Sledge::Request::Table;
+use Sledge::Request::PSGI::Upload;
 use Plack::Request;
-use Plack::Response;
 
 sub new {
     my ($class, $env) = @_;
     bless {
-        query  => Plack::Request->new($env),
-        res    => Plack::Response->new(200),
-        pnotes => {},
+        env         => $env,
+        query       => Plack::Request->new($env),
+        header_hash => {},
+        status      => 200,
+        body        => [],
     }, $class;
 }
 
-sub query { shift->{query} }
-
-sub res { shift->{res} }
-
 sub header_out {
     my ($self, $key, $value) = @_;
-    $self->res->header($key => $value) if @_ == 3;
-    $self->res->header($key);
+    $self->header_hash->{$key} = $value if @_ == 3;
+    $self->header_hash->{$key};
 }
 
 sub headers_out {
     my $self = shift;
-    my %hdr;
-    $self->res->headers->scan(sub { $hdr{$_[0]} = $_[1] });
-    return wantarray ? %hdr
-        : Sledge::Request::Table->new(\%hdr);
+    return wantarray ? %{$self->header_hash}
+        : Sledge::Request::Table->new($self->header_hash);
 }
 
 sub header_in {
     my ($self, $key) = @_;
-    $self->query->header($key);
+    $key =~ s/-/_/g;
+    return $self->env->{"HTTP_" . uc($key)};
 }
 
 sub content_type {
@@ -43,35 +43,36 @@ sub content_type {
     $self->header_out('Content-Type' => $type);
 }
 
-sub send_http_header {}
+sub send_http_header {
+    # do nothing
+}
 
 sub method {
     my $self = shift;
-    $self->query->method || 'GET';
-}
-
-sub status {
-    my ($self, $status) = @_;
-    $self->res->status($status);
+    return $self->env->{REQUEST_METHOD} || 'GET';
 }
 
 sub print {
     my $self = shift;
-    my $body = $self->res->body || [];
-    push @$body, @_;
-    $self->res->body($body);
+    push @{$self->body}, @_;
 }
 
 sub uri {
     my $self = shift;
-    my $uri = $self->query->env->{REQUEST_URI};
+    # $REQUEST_URI - Query String
+    my $uri = $self->env->{REQUEST_URI};
     $uri =~ s/\?.*$//;
-    $uri;
+    return $uri;
 }
 
 sub args {
     my $self = shift;
-    $self->query->env->{QUERY_STRING};
+    return $self->env->{QUERY_STRING};
+}
+
+sub upload {
+    my $self = shift;
+    Sledge::Request::PSGI::Upload->new($self, @_);
 }
 
 sub param {
@@ -83,23 +84,10 @@ sub param {
     $self->query->param(@_);
 }
 
-sub pnotes {
-    my $self = shift;
-    if (@_ == 0) {
-        return keys %{$self->{pnotes}};
-    } elsif (@_ == 1) {
-        return $self->{pnotes}->{$_[0]};
-    } else {
-        $self->{pnotes}->{$_[0]} = $_[1];
-    }
-}
-
-sub finalize {
-    my $self = shift;
-    $self->res->finalize;
-}
+sub DESTROY { }
 
 sub AUTOLOAD {
+    my $self = shift;
     (my $meth = our $AUTOLOAD) =~ s/.*:://;
     no strict 'refs';
     *{$meth} = sub {
@@ -110,7 +98,18 @@ sub AUTOLOAD {
     goto &$meth;
 }
 
-sub DESTROY {}
-
+sub finalize {
+    my ($self) = @_;
+    my %header = %{$self->{header_hash}};
+    my @h;
+    for my $key (keys %header) {
+        if (ref $header{$key} eq 'ARRAY') {
+            push @h, $key, $_ for @{$header{$key}};
+        } else {
+            push @h, $key, $header{$key};
+        }
+    }
+    [$self->status, \@h, $self->body];
+}
 1;
 __END__
