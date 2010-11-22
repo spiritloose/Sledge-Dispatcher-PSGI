@@ -77,9 +77,9 @@ Sledge::Dispatcher::PSGI::Properties - auto-dispatch PSGI application
   use base 'Sledge::Pages::PSGI';
 
   # http://localhost/
-  # => My::Pages::Index->new->dispatch('index')
+  # => My::Pages::Index->new($env)->dispatch('index')
   # http://localhost/bar/baz
-  # => My::Pages::Bar->new->dispatch('baz')
+  # => My::Pages::Bar->new($env)->dispatch('baz')
 
   # like Struts!
   use Plack::Builder;
@@ -96,7 +96,7 @@ Sledge::Dispatcher::PSGI::Properties - auto-dispatch PSGI application
   / = My::Pages::Index
 
   # then access http://localhost/webapp/bar.do
-  # => My::Pages::Index->new->dispatch('bar')
+  # => My::Pages::Index->new($env)->dispatch('bar')
 
 =head1 AUTHOR
 
