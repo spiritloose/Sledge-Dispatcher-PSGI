@@ -79,11 +79,17 @@ sub upload {
 
 sub param {
     my $self = shift;
-    # $r->param(foo => \@bar);
-    if (@_ == 2 && ref($_[1]) eq 'ARRAY') {
-        return $self->query->param($_[0], @{$_[1]});
+    if (@_ <= 1) {
+        $self->query->param(@_);
+    } elsif (@_ == 2) {
+        $self->query->parameters->remove($_[0]);
+        # $r->param(foo => \@bar);
+        if (ref $_[1] eq 'ARRAY') {
+            $self->query->parameters->add($_[0] => @{$_[1]});
+        } else {
+            $self->query->parameters->add($_[0] => $_[1]);
+        }
     }
-    $self->query->param(@_);
 }
 
 sub pnotes {
