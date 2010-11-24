@@ -9,6 +9,7 @@ use Sledge::Dispatcher::PSGI::Dynamic;
 my $dispatcher = Sledge::Dispatcher::PSGI::Dynamic->new(
     BaseClass => 't::TestProj::Pages',
     RootDirClassName => 'Root',
+    DispatchStatic => 1,
 );
 my $app = $dispatcher->to_app;
 

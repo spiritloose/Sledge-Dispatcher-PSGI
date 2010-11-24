@@ -97,7 +97,7 @@ sub handler {
 
     my $no_static = do {
         my $config = $self->config('DispatchStatic');
-        defined $config ? $config : 0;
+        !(defined $config && $config);
     };
     if ($is_static && !$self->_generated($loadclass, $page)) {
         debug($env, 'static method, but not yet auto-generated');

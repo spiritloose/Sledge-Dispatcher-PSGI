@@ -8,6 +8,7 @@ use Sledge::Dispatcher::PSGI::Properties;
 
 my $dispatcher = Sledge::Dispatcher::PSGI::Properties->new(
     MapFile => 't/map/map.props',
+    DispatchStatic => 1,
 );
 my $app = $dispatcher->to_app;
 
