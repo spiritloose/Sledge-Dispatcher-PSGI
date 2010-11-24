@@ -33,9 +33,11 @@ sub headers_out {
 }
 
 sub header_in {
-    my ($self, $key) = @_;
+    my ($self, $key, $value) = @_;
     $key =~ s/-/_/g;
-    return $self->env->{"HTTP_" . uc($key)};
+    $key = 'HTTP_' . uc $key;
+    $self->env->{$key} = $value if @_ == 3;
+    $self->env->{$key};
 }
 
 sub content_type {
