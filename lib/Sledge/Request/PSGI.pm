@@ -69,7 +69,11 @@ sub uri {
 
 sub args {
     my $self = shift;
-    return $self->env->{QUERY_STRING};
+    if (wantarray) {
+        return map { $_ => scalar $self->param($_) } $self->param;
+    } else {
+        return $self->env->{QUERY_STRING};
+    }
 }
 
 sub upload {

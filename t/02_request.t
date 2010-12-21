@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests => 19;
+use Test::More tests => 20;
 BEGIN { $ENV{SLEDGE_CONFIG_NAME} = '_test' }
 use Plack::Test;
 use HTTP::Request::Common;
@@ -15,6 +15,8 @@ sub dispatch_get {
     ok !$self->is_post_request;
     is $self->r->uri, '/get';
     is $self->r->args, 'foo=bar';
+    my %args = $self->r->args;
+    is $args{foo}, 'bar';
     is $self->r->param('foo'), 'bar';
     is $self->r->header_in('X-Foobar'), 'foobar';
 
